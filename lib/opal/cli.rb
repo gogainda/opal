@@ -125,7 +125,7 @@ module Opal
       builder.build_str '$DEBUG = true', '(flags)' if debug
 
       # --eval / stdin / file
-      evals_or_file { |source, filename| builder.build_str(source, filename) }
+      evals_or_file { |source, filename| p source; builder.build_str(source, filename) }
 
       # --no-exit
       builder.build_str '::Kernel.exit', '(exit)' unless no_exit

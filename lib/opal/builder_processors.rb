@@ -14,7 +14,7 @@ module Opal
         @required_trees = []
         @autoloads = []
       end
-      attr_reader :source, :filename, :options, :requires, :required_trees, :autoloads
+      attr_reader :source, :filename, :options, :requires, :required_trees, :autoloads, :method_calls
 
       def to_s
         source.to_s
@@ -106,6 +106,10 @@ module Opal
 
       def autoloads
         compiled.autoloads
+      end
+
+      def method_calls
+        compiled.method_calls
       end
 
       # Also catch a files with missing extensions and nil.

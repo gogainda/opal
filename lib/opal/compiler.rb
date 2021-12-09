@@ -196,6 +196,8 @@ module Opal
     # # await: *await*, sleep, gets
     compiler_option :await, default: false, as: :async_await, magic_comment: true
 
+    compiler_option :allowed_method_defs, default: nil
+
     # @return [String] The compiled ruby code
     attr_reader :result
 

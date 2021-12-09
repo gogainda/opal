@@ -10,6 +10,13 @@ module Opal
       children :mid, :inline_args, :stmts
 
       def compile
+        if compiler.allowed_method_defs && !compiler.allowed_method_defs.include?(mid.to_sym)
+          # push "(/* DCE: #{mid} */ Opal.add_stub(", mid.to_s, '), ', process(@sexp.updated(:str, [mid.to_s])), ')'
+          push "/* DCE: #{mid} */ "
+          push process(@sexp.updated(:alias, [s(:sym, mid.to_s), s(:sym, 'raise')]))
+          return
+        end
+
         inline_params = nil
         scope_name = nil
 

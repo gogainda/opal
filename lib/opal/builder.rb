@@ -95,6 +95,21 @@ module Opal
 
     def build_str(source, rel_path, options = {})
       return if source.nil?
+
+      if options[:get_method_defs] != true && ENV['DCE']
+
+        options[:allowed_method_defs] = []
+
+        dup.build_str(source, rel_path, options.merge(get_method_defs: true)).processed.each do |asset|
+          # p [asset.class, asset.filename] => asset.method_calls.to_a.sort
+          options[:allowed_method_defs].push(*asset.method_calls)
+        end
+        options[:allowed_method_defs].uniq!
+        # p :allowed_method_defs
+        # puts options[:allowed_method_defs].to_a.sort
+        # exit 1
+      end
+
       abs_path = expand_path(rel_path)
       rel_path = expand_ext(rel_path)
       asset = processor_for(source, rel_path, abs_path, false, options)
