@@ -58,6 +58,7 @@
   - Added `nodejs/base` with just I/O, exit, and ARGV management
   - Moved `Process::Status` to corelib
   - Fixed requires to be more robust
+- PromiseV2 is now declared a stable interface!
 
 ### Removed
 
