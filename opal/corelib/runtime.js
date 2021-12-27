@@ -25,7 +25,7 @@
   // Setup a dummy console object if missing
   if (typeof(global_object.console) === 'object') {
     console = global_object.console;
-  } else if (global_object.console == null) {
+  } else if (global_object.console === undefined) {
     console = global_object.console = {};
   } else {
     console = {};
@@ -98,7 +98,7 @@
   // Retrieve or assign the id of an object
   Opal.id = function(obj) {
     if (obj.$$is_number) return (obj * 2)+1;
-    if (obj.$$id != null) {
+    if (obj.$$id !== undefined) {
       return obj.$$id;
     }
     $prop(obj, '$$id', Opal.uid());
@@ -194,7 +194,7 @@
     // Fast path for the most common situation
     if (object['$respond_to?'].$$pristine && object.$method_missing.$$pristine) {
       body = object['$' + method];
-      if (body == null || body.$$stub) throw Opal.type_error(object, type);
+      if (body === undefined || body.$$stub) throw Opal.type_error(object, type);
       return body.apply(object, args);
     }
 
@@ -202,7 +202,7 @@
       throw Opal.type_error(object, type);
     }
 
-    if (args == null) args = [];
+    if (args === undefined) args = [];
     return Opal.send(object, method, args);
   }
 
@@ -250,7 +250,7 @@
         throw e;
       }
       cref.$$autoload[name].required = true;
-      if (cref.$$const[name] != null) {
+      if (cref.$$const[name] !== undefined) {
         cref.$$autoload[name].success = true;
         return cref.$$const[name];
       }
@@ -274,7 +274,7 @@
   // Get the constant in the scope of the current cref
   function const_get_name(cref, name) {
     if (cref) {
-      if (cref.$$const[name] != null) { return cref.$$const[name]; }
+      if (cref.$$const[name] !== undefined) { return cref.$$const[name]; }
       if (cref.$$autoload && cref.$$autoload[name]) {
         return handle_autoload(cref, name);
       }
@@ -291,7 +291,7 @@
     // and in order. The ancestors of those elements are ignored.
     for (i = 0, ii = nesting.length; i < ii; i++) {
       constant = nesting[i].$$const[name];
-      if (constant != null) {
+      if (constant !== undefined) {
         return constant;
       } else if (nesting[i].$$autoload && nesting[i].$$autoload[name]) {
         return handle_autoload(nesting[i], name);
@@ -303,7 +303,7 @@
   function const_lookup_ancestors(cref, name) {
     var i, ii, ancestors;
 
-    if (cref == null) return;
+    if (cref === undefined) return;
 
     ancestors = Opal.ancestors(cref);
 
@@ -319,7 +319,7 @@
   // Walk up Object's ancestors chain looking for the constant,
   // but only if cref is missing or a module.
   function const_lookup_Object(cref, name) {
-    if (cref == null || cref.$$is_module) {
+    if (cref === undefined || cref.$$is_module) {
       return const_lookup_ancestors(_Object, name);
     }
   }
@@ -335,7 +335,7 @@
   Opal.const_get_local = function(cref, name, skip_missing) {
     var result;
 
-    if (cref == null) return;
+    if (cref === undefined) return;
 
     if (cref === '::') cref = _Object;
 
@@ -343,8 +343,8 @@
       throw new Opal.TypeError(cref.toString() + " is not a class/module");
     }
 
-    result = const_get_name(cref, name);              if (result != null) return result;
-    result = const_missing(cref, name, skip_missing); if (result != null) return result;
+    result = const_get_name(cref, name);              if (result !== undefined) return result;
+    result = const_missing(cref, name, skip_missing); if (result !== undefined) return result;
   };
 
   // Look for the constant relative to a cref or call `#const_missing` (when the
@@ -352,15 +352,15 @@
   Opal.const_get_qualified = function(cref, name, skip_missing) {
     var result, cache, cached, current_version = Opal.const_cache_version;
 
-    if (name == null) {
+    if (name === undefined) {
       // A shortpath for calls like ::String => $$$("String")
       result = const_get_name(_Object, cref);
 
-      if (result != null) return result;
+      if (result !== undefined) return result;
       return Opal.const_get_qualified(_Object, cref, skip_missing);
     }
 
-    if (cref == null) return;
+    if (cref === undefined) return;
 
     if (cref === '::') cref = _Object;
 
@@ -368,21 +368,21 @@
       throw new Opal.TypeError(cref.toString() + " is not a class/module");
     }
 
-    if ((cache = cref.$$const_cache) == null) {
+    if ((cache = cref.$$const_cache) === undefined) {
       $prop(cref, '$$const_cache', Object.create(null));
       cache = cref.$$const_cache;
     }
     cached = cache[name];
 
-    if (cached == null || cached[0] !== current_version) {
-      ((result = const_get_name(cref, name))              != null) ||
-      ((result = const_lookup_ancestors(cref, name))      != null);
+    if (cached === undefined || cached[0] !== current_version) {
+      ((result = const_get_name(cref, name))              !== undefined) ||
+      ((result = const_lookup_ancestors(cref, name))      !== undefined);
       cache[name] = [current_version, result];
     } else {
       result = cached[1];
     }
 
-    return result != null ? result : const_missing(cref, name, skip_missing);
+    return result !== undefined ? result : const_missing(cref, name, skip_missing);
   };
 
   // Initialize the top level constant cache generation counter
@@ -393,30 +393,30 @@
   Opal.const_get_relative = function(nesting, name, skip_missing) {
     var cref = nesting[0], result, current_version = Opal.const_cache_version, cache, cached;
 
-    if ((cache = nesting.$$const_cache) == null) {
+    if ((cache = nesting.$$const_cache) === undefined) {
       $prop(nesting, '$$const_cache', Object.create(null));
       cache = nesting.$$const_cache;
     }
     cached = cache[name];
 
-    if (cached == null || cached[0] !== current_version) {
-      ((result = const_get_name(cref, name))              != null) ||
-      ((result = const_lookup_nesting(nesting, name))     != null) ||
-      ((result = const_lookup_ancestors(cref, name))      != null) ||
-      ((result = const_lookup_Object(cref, name))         != null);
+    if (cached === undefined || cached[0] !== current_version) {
+      ((result = const_get_name(cref, name))              !== undefined) ||
+      ((result = const_lookup_nesting(nesting, name))     !== undefined) ||
+      ((result = const_lookup_ancestors(cref, name))      !== undefined) ||
+      ((result = const_lookup_Object(cref, name))         !== undefined);
 
       cache[name] = [current_version, result];
     } else {
       result = cached[1];
     }
 
-    return result != null ? result : const_missing(cref, name, skip_missing);
+    return result !== undefined ? result : const_missing(cref, name, skip_missing);
   };
 
   // Register the constant on a cref and opportunistically set the name of
   // unnamed classes/modules.
   function $const_set(cref, name, value) {
-    if (cref == null || cref === '::') cref = _Object;
+    if (cref === undefined || cref === '::') cref = _Object;
 
     if (value.$$is_a_module) {
       if (value.$$name == null || value.$$name === nil) value.$$name = name;
@@ -447,7 +447,7 @@
   // Get all the constants reachable from a given cref, by default will include
   // inherited constants.
   Opal.constants = function(cref, inherit) {
-    if (inherit == null) inherit = true;
+    if (inherit === undefined) inherit = true;
 
     var module, modules = [cref], i, ii, constants = {}, constant;
 
@@ -566,7 +566,7 @@
     $prop(klass, '$$own_included_modules', []);
     $prop(klass, '$$own_prepended_modules', []);
     $prop(klass, '$$ancestors', []);
-    $prop(klass, '$$ancestors_cache_version', null);
+    $prop(klass, '$$ancestors_cache_version', undefined);
     $prop(klass, '$$subclasses', []);
 
     $prop(klass.$$prototype, '$$class', klass);
@@ -637,7 +637,7 @@
   Opal.klass = function(scope, superclass, name) {
     var bridged;
 
-    if (scope == null || scope == '::') {
+    if (scope === undefined || scope == '::') {
       // Global scope
       scope = _Object;
     } else if (!scope.$$is_class && !scope.$$is_module) {
@@ -647,7 +647,7 @@
 
     // If the superclass is not an Opal-generated class then we're bridging a native JS class
     if (
-      superclass != null && (!superclass.hasOwnProperty || (
+      superclass !== undefined && superclass !== null && (!superclass.hasOwnProperty || (
         superclass.hasOwnProperty && !superclass.hasOwnProperty('$$is_class')
       ))
     ) {
@@ -749,7 +749,7 @@
 
   function find_existing_module(scope, name) {
     var module = const_get_name(scope, name);
-    if (module == null && scope === _Object) module = const_lookup_ancestors(_Object, name);
+    if (module === undefined && scope === _Object) module = const_lookup_ancestors(_Object, name);
 
     if (module) {
       if (!module.$$is_module && module !== _Object) {
@@ -763,7 +763,7 @@
   Opal.module = function(scope, name) {
     var module;
 
-    if (scope == null || scope == '::') {
+    if (scope === undefined || scope == '::') {
       // Global scope
       scope = _Object;
     } else if (!scope.$$is_class && !scope.$$is_module) {
@@ -1882,7 +1882,7 @@
 
     if (typeof(method) === 'function') {
       body = method;
-      method = null;
+      method = undefined;
     } else if (typeof(method) === 'string') {
       body = recv['$'+method];
     } else {
@@ -1893,7 +1893,7 @@
   };
 
   Opal.send2 = function(recv, body, method, args, block, blockopts) {
-    if (body == null && method != null && recv.$method_missing) {
+    if (body === undefined && method !== undefined && recv.$method_missing) {
       body = recv.$method_missing;
       args = [method].concat(args);
     }
@@ -2542,7 +2542,7 @@
     if (pattern.global) {
       return pattern; // RegExp already has the global flag
     }
-    if (pattern.$$g == null) {
+    if (pattern.$$g === undefined) {
       pattern.$$g = new RegExp(pattern.source, (pattern.multiline ? 'gm' : 'g') + (pattern.ignoreCase ? 'i' : ''));
     } else {
       pattern.$$g.lastIndex = null; // reset lastIndex property
@@ -2560,12 +2560,12 @@
         return pattern; // RegExp already has the global and multiline flag
       }
       // we are using the $$g attribute because the Regexp is already multiline
-      if (pattern.$$g != null) {
+      if (pattern.$$g !== undefined) {
         result = pattern.$$g;
       } else {
         result = pattern.$$g = new RegExp(pattern.source, 'gm' + (pattern.ignoreCase ? 'i' : ''));
       }
-    } else if (pattern.$$gm != null) {
+    } else if (pattern.$$gm !== undefined) {
       result = pattern.$$gm;
     } else {
       result = pattern.$$gm = new RegExp(pattern.source, 'gm' + (pattern.ignoreCase ? 'i' : ''));
@@ -2577,7 +2577,7 @@
   // Combine multiple regexp parts together
   Opal.regexp = function(parts, flags) {
     var part;
-    var ignoreCase = typeof flags !== 'undefined' && flags && flags.indexOf('i') >= 0;
+    var ignoreCase = flags !== undefined && flags.indexOf('i') >= 0;
 
     for (var i = 0, ii = parts.length; i < ii; i++) {
       part = parts[i];
@@ -2701,7 +2701,7 @@
   // @param name [String] the canonical name of the encoding
   // @param type [String] possible values are either `"encoding"`, `"internal_encoding"`, or `undefined
   Opal.set_encoding = function(str, name, type) {
-    if (typeof type === "undefined") type = "encoding";
+    if (type === undefined) type = "encoding";
     if (typeof str === 'string' || str.$$frozen === true)
       throw Opal.FrozenError.$new("can't modify frozen String");
 
@@ -2736,13 +2736,13 @@
     return Opal.set_encoding(dup, "binary", "internal_encoding");
   }
 
-  Opal.last_promise = null;
+  Opal.last_promise = undefined;
   Opal.promise_unhandled_exception = false;
 
   // Run a block of code, but if it returns a Promise, don't run the next
   // one, but queue it.
   Opal.queue = function(proc) {
-    if (Opal.last_promise) {
+    if (Opal.last_promise !== undefined) {
       // The async path is taken only if anything before returned a
       // Promise(V2).
       Opal.last_promise = Opal.last_promise.then(function() {
