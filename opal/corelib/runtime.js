@@ -194,8 +194,6 @@
       return body.apply(object, args);
     }
 
-    console.log("...not!");
-
     if (!object['$respond_to?'](method)) {
       throw Opal.type_error(object, type);
     }
@@ -1878,8 +1876,6 @@
   Opal.send = function(recv, method, args, block, blockopts) {
     var body;
 
-    apply_blockopts(block, blockopts);
-
     if (typeof(method) === 'function') {
       body = method;
       method = null;
@@ -1889,7 +1885,7 @@
       throw Opal.NameError.$new("Passed method should be a string or a function");
     }
 
-    return Opal.send2(recv, body, method, args, block);
+    return Opal.send2(recv, body, method, args, block, blockopts);
   };
 
   Opal.send2 = function(recv, body, method, args, block, blockopts) {
@@ -1913,8 +1909,6 @@
       ancestors = Opal.ancestors(recv.$$class);
     }
 
-    apply_blockopts(block, blockopts);
-
     // For all ancestors that there are, starting from the closest to the furthest...
     for (i = 0; i < ancestors.length; i++) {
       ancestor = Opal.id(ancestors[i]);
@@ -1934,14 +1928,14 @@
             // Does this module define a method we want to call?
             if (typeof refine_module.$$prototype['$'+method] !== 'undefined') {
               body = refine_module.$$prototype['$'+method];
-              return Opal.send2(recv, body, method, args, block);
+              return Opal.send2(recv, body, method, args, block, blockopts);
             }
           }
         }
       }
     }
 
-    return Opal.send(recv, method, args, block);
+    return Opal.send(recv, method, args, block, blockopts);
   };
 
   Opal.lambda = function(block, blockopts) {
