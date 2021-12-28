@@ -30,6 +30,8 @@ jobs:
             strict: 'true'
           - name: current-ruby
             ruby: 3.0
+          - name: truffleruby
+            ruby: truffleruby-head
           - name: previous-ruby
             ruby: 2.7
           - name: older-ruby
